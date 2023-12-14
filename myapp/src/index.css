@@ -1,0 +1,20 @@
+body {
+  background-color: #dedede;
+}
+
+a {
+  text-decoration: none;
+  font-size: 32px;
+  font-weight: 700;
+}
+.activeLink {
+  color: rgb(255, 75, 105);
+}
+
+.Link {
+  color: rgb(0, 0, 155);
+}
+.Link:hover {
+  color: rgb(255, 75, 105);
+  transition: 0.5s ease-in-out;
+}

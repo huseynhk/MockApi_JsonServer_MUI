@@ -1,0 +1,11 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "fullName": "Milan Baros",
+      "age": "43",
+      "email": "baros@gmail",
+      "phone": "+9943509292"
+    }
+  ]
+}
