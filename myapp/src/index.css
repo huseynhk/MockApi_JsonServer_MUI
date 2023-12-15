@@ -1,20 +1,47 @@
 body {
-  background-color: #dedede;
+  background-color: #dadada;
+  margin: 0;
 }
 
 a {
   text-decoration: none;
   font-size: 32px;
   font-weight: 700;
+  margin-right: 2rem;
 }
 .activeLink {
-  color: rgb(255, 75, 105);
+  color: pink;
 }
 
 .Link {
-  color: rgb(0, 0, 155);
+  color: rgb(225, 225, 255);
 }
 .Link:hover {
-  color: rgb(255, 75, 105);
+  color: pink;
   transition: 0.5s ease-in-out;
+}
+
+.center {
+  display: grid;
+  place-items: center;
+}
+
+.center h1 {
+  color: rgb(65, 65, 245);
+  font-size: 50px;
+}
+
+.deletedItem {
+  margin: 0 0.5rem;
+  color: red;
+}
+.sort {
+  font-size: 24px;
+  margin-right: 6px;
+  color: rgb(65, 65, 245);
+}
+.btns {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
