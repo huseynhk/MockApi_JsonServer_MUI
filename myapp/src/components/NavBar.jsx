@@ -11,7 +11,7 @@ const NavBar = () => {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
-            Mock Api Crud
+           React Query
           </Typography>
 
           <Link

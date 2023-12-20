@@ -3,7 +3,6 @@ import React, { createContext, useContext, useRef, useState } from "react";
 const GlobalContext = createContext();
 
 const GlobalContextProvider = ({ children }) => {
-  const [users, setUsers] = useState([]);
   // Edit Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editedItem, setEditedItem] = useState(null);
@@ -35,25 +34,6 @@ const GlobalContextProvider = ({ children }) => {
     setDeletedItem(null);
   };
 
-  const handleSortUsers = (event) => {
-    const sortedValue = event.target.value;
-    const sordetData = [...users];
-    const sordetUsers = sordetData.sort((a, b) => {
-      if (sortedValue === "A-Z") {
-        return a.fullName.localeCompare(b.fullName);
-      } else if (sortedValue === "Z-A") {
-        return b.fullName.localeCompare(a.fullName);
-      } else if (sortedValue === "Low-to-High") {
-        return a.age - b.age;
-      } else {
-        return b.age - a.age;
-      }
-    });
-    setUsers(sordetUsers);
-  };
-
-
-
   const contextValue = {
     inputRef,
     setFocus,
@@ -68,9 +48,6 @@ const GlobalContextProvider = ({ children }) => {
     show,
     setShow,
     closeDeleteModal,
-    users,
-    setUsers,
-    handleSortUsers,
   };
   const Component = GlobalContext.Provider;
 

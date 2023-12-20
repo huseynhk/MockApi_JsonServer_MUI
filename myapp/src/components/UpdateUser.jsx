@@ -6,6 +6,8 @@ import { toast } from "react-toastify";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { TextField, Button } from "@mui/material";
 import { isValidEmail, isValidPhone } from "../utils/ValidRegex";
+import { QUERIES } from "../constant/Queries";
+import { useQuery, useMutation } from "react-query";
 
 const initialState = {
   fullName: "",
@@ -20,10 +22,34 @@ const UpdateUser = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
 
-  const fetchUser = async () => {
-    const response = await GetSingleUser(userId);
-    setEditedUser(response);
-  };
+  const { data, isLoading, isError } = useQuery({
+    queryKey: QUERIES.SingleUser,
+    queryFn: () => GetSingleUser(userId),
+    config: {
+      refetchOnReconnect: true,
+      refetchInterval: false,
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: () => EditUsers(userId, editedUser),
+    onSuccess: () => {
+      setEditedUser(initialState);
+      toast.success("User updated successfully!", {
+        autoClose: 1000,
+      });
+      setTimeout(() => {
+        navigate(ROUTER.Home);
+      }, 1500);
+    },
+    onError: (error) => {
+      console.error("Error updating user:", error.message);
+      toast.error("Error updating user", {
+        autoClose: 1000,
+      });
+    },
+  });
+
   const handleEditUser = async () => {
     if (!isValidEmail(editedUser.email)) {
       toast.error("Invalid email address", {
@@ -38,14 +64,7 @@ const UpdateUser = () => {
       });
       return;
     }
-    await EditUsers(userId, editedUser);
-    setEditedUser(initialState);
-    toast.success("User added successfully!", {
-      autoClose: 1000,
-    });
-    setTimeout(() => {
-      navigate(ROUTER.Home);
-    }, 1500);
+    mutation.mutate(editedUser);
   };
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -56,9 +75,22 @@ const UpdateUser = () => {
   };
 
   useEffect(() => {
-    fetchUser();
+    if (data) {
+      setEditedUser(data);
+    }
+  }, [data]);
+
+  useEffect(() => {
     setFocus();
   }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error fetching user</div>;
+  }
   return (
     <>
       <div className="center">
@@ -120,7 +152,7 @@ const UpdateUser = () => {
           color="secondary"
           sx={{ width: "77.5ch", marginTop: "2.5ch" }}
         >
-          Add User
+          {mutation.isLoading ? "Updating User..." : "Update User"}
         </Button>
       </div>
     </>

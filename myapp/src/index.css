@@ -1,5 +1,5 @@
 body {
-  background-color: #dadada;
+  background-color: #dedede;
   margin: 0;
 }
 
@@ -28,7 +28,7 @@ a {
 
 .center h1 {
   color: rgb(65, 65, 245);
-  font-size: 50px;
+  font-size: 40px;
 }
 
 .deletedItem {

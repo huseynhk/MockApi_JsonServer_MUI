@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const Api = axios.create({
-  baseURL: "http://localhost:3000/users",
+  // baseURL: "http://localhost:3000/users",
+  baseURL: "https://blog-api-t6u0.onrender.com/posts",
 });
 
 export const GetUsers = async () => {
@@ -10,7 +11,8 @@ export const GetUsers = async () => {
     if (response.status !== 200) {
       throw new Error("Error");
     } else {
-      return response.data;
+      const filteredata = response.data.filter((user) => user.id > 100);
+      return filteredata;
     }
   } catch (error) {
     console.log(error.message);

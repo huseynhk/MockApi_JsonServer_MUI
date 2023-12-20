@@ -4,9 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { ROUTER } from "../constant/Router";
 import { toast } from "react-toastify";
 import { useGlobalContext } from "../contexts/GlobalContext";
-import moment from "moment";
 import { TextField, Button } from "@mui/material";
+import moment from "moment";
 import { isValidEmail, isValidPhone } from "../utils/ValidRegex";
+import { useMutation } from "react-query";
 
 const initialState = {
   fullName: "",
@@ -19,6 +20,25 @@ const AddUser = () => {
   const { inputRef, setFocus } = useGlobalContext();
   const [newUser, setNewUser] = useState(initialState);
   const navigate = useNavigate();
+
+  const mutation = useMutation({
+    mutationFn: AddUsers, // () => AddUsers(newUser),
+    onSuccess: () => {
+      setNewUser(initialState);
+      toast.success("User added successfully!", {
+        autoClose: 1000,
+      });
+      setTimeout(() => {
+        navigate(ROUTER.Home);
+      }, 1500);
+    },
+    onError: (error) => {
+      console.error("Error adding user:", error.message);
+      toast.error("Error adding user", {
+        autoClose: 1000,
+      });
+    },
+  });
 
   const isFormValid = () => {
     return Object.values(newUser).every((value) => value !== "");
@@ -40,15 +60,8 @@ const AddUser = () => {
     }
     const createDate = moment().valueOf();
     const userWithDate = { ...newUser, create_at: createDate };
-    
-    await AddUsers(userWithDate);
-    setNewUser(initialState);
-    toast.success("User added successfully!", {
-      autoClose: 1000,
-    });
-    setTimeout(() => {
-      navigate(ROUTER.Home);
-    }, 1500);
+
+    mutation.mutate(userWithDate);
   };
 
   const handleInputChange = (event) => {
@@ -125,7 +138,7 @@ const AddUser = () => {
           sx={{ width: "77.5ch", marginTop: "2.5ch" }}
           disabled={!isFormValid()}
         >
-          Add User
+          {mutation.isLoading ? "Adding User..." : "Add User"}
         </Button>
       </div>
     </>

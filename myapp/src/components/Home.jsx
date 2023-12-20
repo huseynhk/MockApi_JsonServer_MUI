@@ -1,9 +1,8 @@
-import React, { useEffect } from "react";
-import { GetUsers, DeleteUser } from "../api/apiRequest";
+import React, { useEffect, useState } from "react";
+import { GetUsers } from "../api/apiRequest";
 import EditUser from "./EditUser";
 import { useNavigate } from "react-router-dom";
 import { ROUTER } from "../constant/Router";
-import { toast } from "react-toastify";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import DeleteModal from "./DeleteModal";
 import moment from "moment";
@@ -20,54 +19,62 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import { QUERIES } from "../constant/Queries";
+import { useQuery } from "react-query";
 
 const Home = () => {
-  const {
-    isModalOpen,
-    editedItem,
-    openModal,
-    openDeleteModal,
-    closeDeleteModal,
-    users,
-    setUsers,
-    handleSortUsers,
-  } = useGlobalContext();
-
+  const { isModalOpen, editedItem, openModal, openDeleteModal } =
+    useGlobalContext();
   const navigate = useNavigate();
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: QUERIES.Users,
+    queryFn: GetUsers,
+    config: {
+      refetchOnReconnect: true,
+      refetchInterval: false,
+    },
+  });
+  const [sortedUsers, setSortedUsers] = useState([]);
 
-  const fetchUsers = async () => {
-    const response = await GetUsers();
-    setUsers(response);
-  };
+  const handleSortUsers = (event) => {
+    const sortedValue = event.target.value;
+    const sortedData = [...data];
 
-  const deleteUser = async (userId) => {
-    await DeleteUser(userId);
-    fetchUsers();
-    toast.success("User deleted successfully!", {
-      autoClose: 1000,
+    sortedData.sort((a, b) => {
+      if (sortedValue === "A-Z") {
+        return a.fullName.localeCompare(b.fullName);
+      } else if (sortedValue === "Z-A") {
+        return b.fullName.localeCompare(a.fullName);
+      } else if (sortedValue === "Low-to-High") {
+        return a.age - b.age;
+      } else {
+        return b.age - a.age;
+      }
     });
-    closeDeleteModal();
+
+    setSortedUsers(sortedData);
   };
 
   const resetSortedData = async () => {
-    await fetchUsers();
+    await refetch();
+    setSortedUsers([]);
   };
 
   useEffect(() => {
-    fetchUsers();
+    refetch();
   }, [isModalOpen]);
 
   const StyledContainer = styled("div")({
     display: "flex",
-    justifyContent: "center",
+    justifyContent: "start",
     alignItems: "center",
     flexDirection: "column",
     "& h1": {
-      marginBottom: "-5px",
-      fontSize: "36px",
+      fontSize: "40px",
       color: "blue",
+      marginBottom: "-3px"
     },
   });
 
@@ -101,7 +108,7 @@ const Home = () => {
 
         <div>
           <TableContainer component={Paper}>
-            <Table aria-label="simple table">
+            <Table aria-label="simple table" >
               <TableHead>
                 <TableRow>
                   <TableCell>S.No</TableCell>
@@ -115,62 +122,72 @@ const Home = () => {
                 </TableRow>
               </TableHead>
 
-              <TableBody>
-                {users.length > 0 ? (
-                  users.map((user, index) => (
-                    <TableRow key={user.id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{user.fullName}</TableCell>
-                      <TableCell>{user.age}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.phone}</TableCell>
-                      <TableCell>{moment(user?.create_at).fromNow()}</TableCell>
-                      <TableCell>
-                        <div className="btns">
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            onClick={() => openModal(user)}
-                          >
-                            Modal Edit
-                          </Button>
-                          <Button
-                            variant="contained"
-                            color="warning"
-                            onClick={() =>
-                              navigate(`${ROUTER.UpdateUser}/${user.id}`)
-                            }
-                          >
-                            Page Edit
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="btns">
-                          <Button
-                            variant="contained"
-                            color="error"
-                            onClick={() => openDeleteModal(user)}
-                          >
-                            <DeleteIcon />
-                          </Button>
-                          <Button
-                            variant="contained"
-                            color="success"
-                            onClick={() =>
-                              navigate(`${ROUTER.Detail}/${user.id}`)
-                            }
-                          >
-                            <VisibilityIcon />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
+              <TableBody >
+                {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7}>No User available</TableCell>
+                    <TableCell colSpan={7}>Loading...</TableCell>
                   </TableRow>
+                ) : isError ? (
+                  <TableRow>
+                    <TableCell colSpan={7}>Error fetching users</TableCell>
+                  </TableRow>
+                ) : (
+                  <>
+                    {(sortedUsers.length > 0 ? sortedUsers : data).map(
+                      (user, index) => (
+                        <TableRow key={user.id} >
+                          <TableCell>{index + 1}</TableCell>
+                          <TableCell>{user.fullName}</TableCell>
+                          <TableCell>{user.age}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>{user.phone}</TableCell>
+                          <TableCell>
+                            {moment(user?.create_at).fromNow()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="btns">
+                              <Button
+                                variant="contained"
+                                color="secondary"
+                                onClick={() => openModal(user)}
+                              >
+                                Modal Edit
+                              </Button>
+                              <Button
+                                variant="contained"
+                                color="warning"
+                                onClick={() =>
+                                  navigate(`${ROUTER.UpdateUser}/${user.id}`)
+                                }
+                              >
+                                Page Edit
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="btns">
+                              <Button
+                                variant="contained"
+                                color="error"
+                                onClick={() => openDeleteModal(user)}
+                              >
+                                <DeleteForeverIcon />
+                              </Button>
+                              <Button
+                                variant="contained"
+                                color="success"
+                                onClick={() =>
+                                  navigate(`${ROUTER.Detail}/${user.id}`)
+                                }
+                              >
+                                <VisibilityIcon />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    )}
+                  </>
                 )}
               </TableBody>
             </Table>
@@ -178,7 +195,7 @@ const Home = () => {
         </div>
 
         {editedItem && <EditUser />}
-        <DeleteModal deleteUser={deleteUser} />
+        <DeleteModal />
       </StyledContainer>
     </>
   );

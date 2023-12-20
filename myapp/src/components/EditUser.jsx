@@ -5,26 +5,33 @@ import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import { QUERIES } from "../constant/Queries";
+import { useMutation, useQueryClient } from "react-query";
 
 const EditUser = () => {
   const { isModalOpen, editedItem, closeModal } = useGlobalContext();
   const [editedUser, setEditedUser] = useState(editedItem);
 
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn:() => EditUsers(editedUser.id, editedUser),
+    onSuccess: () => {
+      queryClient.invalidateQueries(QUERIES.SingleUser);
+      closeModal();
+    },
+  });
+  const updateUser = async () => {
+    mutation.mutate(editedUser);
+  };
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    console.log(name, value)
+    console.log(name, value);
     setEditedUser({
       ...editedUser,
       [name]: value,
     });
   };
-
-  const updateUser = async () => {
-    await EditUsers(editedUser.id, editedUser);
-    closeModal();
-  };
-
-
 
   return (
     <>
